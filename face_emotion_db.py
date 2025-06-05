@@ -3,16 +3,12 @@ import sqlite3
 def init_db():
     conn = sqlite3.connect("face_emotion.db")
     cursor = conn.cursor()
-
-    # Table for registered users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE NOT NULL
         )
     ''')
-
-    # Table for emotion logs
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS emotion_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
