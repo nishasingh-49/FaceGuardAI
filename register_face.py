@@ -1,10 +1,6 @@
 import cv2
 import os
-
-# Load Haar Cascade
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-
-# Ask for user name
 name = input("Enter your name for registration: ").strip().lower()
 save_dir = os.path.join("training_data", name)
 os.makedirs(save_dir, exist_ok=True)
