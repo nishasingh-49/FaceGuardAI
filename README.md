@@ -43,3 +43,4 @@ This project is perfect for workplace safety, public road monitoring, or any AI-
 -Admin panel to manage users, track violators<br>
 -Cloud deployment with video stream input<br>
 
+# get the dataset from kaggle or any other online platform!!
