@@ -44,4 +44,4 @@ This project is perfect for workplace safety, public road monitoring, or any AI-
 -Cloud deployment with video stream input<br>
 
 # get the dataset from kaggle or any other online platform!!
-(on training the model a face_model.yml file will be generated!)
+(on training the model a face_model.yml file will be generated, as its a very big file i am unable to upload it here.)
