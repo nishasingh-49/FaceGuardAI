@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emotion Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background:#111; color:white; font-family:sans-serif; text-align:center;">
+  <h1>🧠 Emotion Recognition Dashboard</h1>
+
+  <canvas id="emotionChart" width="400" height="400"></canvas>
+
+  <h2 style="margin-top: 50px;">📝 Recent Logs</h2>
+  <table style="margin: 0 auto; border-collapse: collapse; width: 80%; color: white;">
+    <thead>
+      <tr>
+        <th style="border-bottom: 1px solid #ccc; padding: 8px;">Timestamp</th>
+        <th style="border-bottom: 1px solid #ccc; padding: 8px;">Name</th>
+        <th style="border-bottom: 1px solid #ccc; padding: 8px;">Emotion</th>
+        <th style="border-bottom: 1px solid #ccc; padding: 8px;">Confidence</th>
+      </tr>
+    </thead>
+    <tbody id="logTableBody"></tbody>
+  </table>
+
+  <script>
+    // Fetch pie chart data
+    fetch("/emotion-data")
+      .then(res => res.json())
+      .then(data => {
+        const labels = data.map(d => d.emotion);
+        const counts = data.map(d => d.count);
+        new Chart(document.getElementById("emotionChart"), {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Emotion Count',
+              data: counts,
+              backgroundColor: [
+                '#f39c12', '#3498db', '#2ecc71',
+                '#e74c3c', '#9b59b6', '#95a5a6', '#1abc9c'
+              ],
+              borderWidth: 1
+            }]
+          }
+        });
+      });
+
+    // Fetch recent logs
+    fetch("/recent-logs")
+      .then(res => res.json())
+      .then(logs => {
+        const table = document.getElementById("logTableBody");
+        logs.forEach(log => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td style="padding: 8px;">${log.timestamp}</td>
+            <td style="padding: 8px;">${log.name}</td>
+            <td style="padding: 8px;">${log.emotion}</td>
+            <td style="padding: 8px;">${log.confidence.toFixed(2)}</td>
+          `;
+          table.appendChild(row);
+        });
+      });
+  </script>
+</body>
+</html>
