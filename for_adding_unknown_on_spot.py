@@ -7,24 +7,17 @@ from datetime import datetime
 import os
 import tkinter as tk
 from tkinter import simpledialog
-
-# ====== Load Models ======
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 face_recognizer = cv2.face.LBPHFaceRecognizer_create()
 face_recognizer.read("face_model.yml")
 emotion_model = load_model("facialemotionmodel_finetuned_v2.keras")
-
-# ====== Label Map ======
 label_map = {}
 if os.path.exists("labels.txt"):
     with open("labels.txt", "r") as f:
         for line in f:
             label_id, name = line.strip().split(",")
             label_map[int(label_id)] = name
-
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
-
-# ====== SQLite Setup ======
 conn = sqlite3.connect("emotion_log.db")
 cursor = conn.cursor()
 cursor.execute("""
@@ -38,32 +31,24 @@ cursor.execute("""
 """)
 conn.commit()
 conn.close()
-
-# ====== Tkinter Setup ======
 root = tk.Tk()
 root.withdraw()  # Hide root window
-
-# ====== Webcam Setup ======
 cap = cv2.VideoCapture(0)
 frame_count = 0
 last_results = {}
-
 while True:
     ret, frame = cap.read()
     if not ret:
         break
-
     frame = cv2.flip(frame, 1)
     small_frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
     gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
 
     faces = face_cascade.detectMultiScale(gray, 1.1, 5)
     frame_count += 1
-
     for i, (x, y, w, h) in enumerate(faces):
         x_full, y_full, w_full, h_full = x*2, y*2, w*2, h*2
         roi_gray = cv2.resize(gray[y:y+h, x:x+w], (200, 200))
-
         cache_key = f"face_{i}"
         if frame_count % 5 == 0 or cache_key not in last_results:
             try:
@@ -74,8 +59,6 @@ while True:
             except:
                 name = "Unknown"
                 confidence = 0.0
-
-            # 🧠 Emotion Detection
             try:
                 emotion_roi = cv2.resize(gray[y:y+h, x:x+w], (48, 48))
                 emotion_roi = emotion_roi.astype("float32") / 255.0
@@ -85,15 +68,11 @@ while True:
                 emotion = emotion_labels[np.argmax(preds)]
             except:
                 emotion = "Unknown"
-
-            # 👤 Unknown Face Handling
             if name == "Unknown":
                 timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
                 face_crop = frame[y_full:y_full+h_full, x_full:x_full+w_full]
                 cv2.imshow("Unknown Face", face_crop)
                 cv2.waitKey(1)
-
-                # 🔤 Ask for label using popup
                 user_input = simpledialog.askstring("Unknown Face Detected", "Enter name to label this face:")
                 if user_input:
                     label_dir = os.path.join("dataset", user_input)
@@ -103,8 +82,6 @@ while True:
 
                     gray_face = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
                     gray_face_resized = cv2.resize(gray_face, (200, 200))
-
-                    # 🔢 Assign label ID
                     if user_input in label_map.values():
                         label_id = [k for k, v in label_map.items() if v == user_input][0]
                     else:
@@ -112,18 +89,14 @@ while True:
                         label_map[label_id] = user_input
                         with open("labels.txt", "a") as f:
                             f.write(f"{label_id},{user_input}\n")
-
-                    # 🔁 Update recognizer
                     face_recognizer.update([gray_face_resized], np.array([label_id]))
                     name = user_input
                     confidence = 0.0
                 else:
-                    print("⏭️ No label entered.")
+                    print("No label entered.")
                 cv2.destroyWindow("Unknown Face")
 
             last_results[cache_key] = (name, emotion)
-
-            # 🗂️ Log to SQLite
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
                 conn = sqlite3.connect("emotion_log.db")
@@ -135,12 +108,9 @@ while True:
                 conn.commit()
                 conn.close()
             except Exception as e:
-                print("❌ Failed to log to SQLite:", e)
-
+                print("Failed to log to SQLite:", e)
         else:
             name, emotion = last_results[cache_key]
-
-        # 📌 Draw on frame
         label_text = f"{name} | {emotion}"
         cv2.rectangle(frame, (x_full, y_full), (x_full + w_full, y_full + h_full), (0, 255, 0), 2)
         (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.9, 2)
