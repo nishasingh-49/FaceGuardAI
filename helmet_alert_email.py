@@ -7,7 +7,7 @@ from datetime import datetime, date
 import smtplib
 from email.mime.text import MIMEText
 
-# Initialize models and data
+
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 face_recognizer = cv2.face.LBPHFaceRecognizer_create()
 face_recognizer.read("face_model.yml")
@@ -21,7 +21,7 @@ with open("labels.txt", "r") as f:
 
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
-# Setup SQLite logs
+
 conn = sqlite3.connect("emotion_log.db")
 cursor = conn.cursor()
 cursor.execute("""
